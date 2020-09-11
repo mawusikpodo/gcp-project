@@ -4,59 +4,58 @@
 
 1.  Open cloud shell and create a folder named dminfra.
 
-    mkdir dminfra
-    cd dminfra
+        mkdir dminfra
+        cd dminfra
 
 2.  Create a new file named config.yaml and define your network rosources
 
-    imports:
-    - path: instance-template.jinja
-      resources:
-    - name: mynetwork
-      type: compute.v1.network
-      properties:
-      autoCreateSubnetworks: true
-    - name: mynetwork-allow-http-ssh-rdp-icmp
-      type: compute.v1.firewall
-      properties:
-      network: \$(ref.mynetwork.selfLink)
-      sourceRanges: ["0.0.0.0/0"]
-      allowed: - IPProtocol: TCP
-      ports: [22, 80, 3389] - IPProtocol: ICMP
-    - name: mynet-us-vm
-      type: instance-template.jinja
-      properties:
-      zone: us-central1-a
-      machineType: n1-standard-1
-      network: \$(ref.mynetwork.selfLink)
-      subnetwork: regions/us-central1/subnetworks/mynetwork
-    - name: mynet-eu-vm
-      type: instance-template.jinja
-      properties:
-      zone: europe-west1-d
-      machineType: n1-standard-1
-      network: \$(ref.mynetwork.selfLink)
-      subnetwork: regions/europe-west1/subnetworks/mynetwork
+        imports:
+        - path: instance-template.jinja
+        resources:
+        - name: mynetwork
+        type: compute.v1.network
+        properties:
+        autoCreateSubnetworks: true
+        - name: mynetwork-allow-http-ssh-rdp-icmp
+        type: compute.v1.firewall
+        properties:
+        network: \$(ref.mynetwork.selfLink)
+        sourceRanges: ["0.0.0.0/0"]
+        allowed: - IPProtocol: TCP
+        ports: [22, 80, 3389] - IPProtocol: ICMP
+        - name: mynet-us-vm
+        type: instance-template.jinja
+        properties:
+        zone: us-central1-a
+        machineType: n1-standard-1
+        network: \$(ref.mynetwork.selfLink)
+        subnetwork: regions/us-central1/subnetworks/mynetwork
+        - name: mynet-eu-vm
+        type: instance-template.jinja
+        properties:
+        zone: europe-west1-d
+        machineType: n1-standard-1
+        network: \$(ref.mynetwork.selfLink)
+        subnetwork: regions/europe-west1/subnetworks/mynetwork
 
 3.  Create a new file named instance-template.jinja and define your instance template resources
 
-    resources:
-
-    - name: {{ env["name"] }}
-      type: compute.v1.instance
-      properties:
-      machineType: zones/{{ properties["zone"] }}/machineTypes/{{ properties["machineType"] }}
-      zone: {{ properties["zone"] }}
-      networkInterfaces: - network: {{ properties["network"] }}
-      subnetwork: {{ properties["subnetwork"] }}
-      accessConfigs: - name: External NAT
-      type: ONE_TO_ONE_NAT
-      disks: - deviceName: {{ env["name"] }}
-      type: PERSISTENT
-      boot: true
-      autoDelete: true
-      initializeParams:
-      sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
+        resources:
+        - name: {{ env["name"] }}
+        type: compute.v1.instance
+        properties:
+        machineType: zones/{{ properties["zone"] }}/machineTypes/{{ properties["machineType"] }}
+        zone: {{ properties["zone"] }}
+        networkInterfaces: - network: {{ properties["network"] }}
+        subnetwork: {{ properties["subnetwork"] }}
+        accessConfigs: - name: External NAT
+        type: ONE_TO_ONE_NAT
+        disks: - deviceName: {{ env["name"] }}
+        type: PERSISTENT
+        boot: true
+        autoDelete: true
+        initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
 
 4.  Create a deployment script named deployment.sh and add the deployment command
 
@@ -65,7 +64,7 @@
 
 5.  run the deployment script
 
-    . deployment.sh
+        . deployment.sh
 
 # Automating the Deployment of Infrastructure Using Terraform
 
@@ -134,22 +133,21 @@
             image = "debian-cloud/debian-9"
             }
         }
+        network_interface {
+        subnetwork = "\${var.instance_subnetwork}"
+        access_config { # Allocate a one-to-one NAT IP to the instance
+        }
+        }
 
-    network_interface {
-    subnetwork = "\${var.instance_subnetwork}"
-    access_config { # Allocate a one-to-one NAT IP to the instance
-    }
-    }
-
-}
+        }
 
 7. Create a deployment script named deployment.sh and add the deployment command
 
-   terraform fmt
-   terraform init
-   terraform plan
-   terraform apply
+        terraform fmt
+        terraform init
+        terraform plan
+        terraform apply
 
 8. run the deployment script
 
-   . deployment.sh
+        . deployment.sh
